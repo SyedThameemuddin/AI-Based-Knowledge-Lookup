@@ -29,8 +29,8 @@ env/
 Thumbs.db
 desktop.ini
 
-# FAISS runtime data (auto-generated from rag_project/)
-backend/src/data/
+
+
 
 # Byte-compiled / cached
 *.pyc

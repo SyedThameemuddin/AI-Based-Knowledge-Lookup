@@ -189,18 +189,7 @@ LOG_LEVEL=INFO
 
 ### Step 7: Verify Sample Data
 
-Check that the `rag_project/` directory contains the sample data files:
-
-```
-rag_project/
-├── shipments.xlsx         ← Sample dataset (10 shipment records)
-├── faiss_index.index      ← Pre-built FAISS index
-├── metadata.pkl           ← Pre-built metadata
-├── load_data.py           ← Original data loading script
-└── rag_query.py           ← Original query script
-```
-
-The backend will automatically copy `faiss_index.index` and `metadata.pkl` from `rag_project/` to `backend/src/data/` on first startup.
+The sample data (`shipments.xlsx`) and pre-built FAISS index are included in `backend/src/data/` and will load automatically on startup.
 
 ---
 
@@ -220,8 +209,7 @@ python -m uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 INFO:     Will watch for changes in these directories: ['...backend/src']
 INFO:     Started reloader process [14424] using WatchFiles
 ✓ Data directory ready: .../backend/src/data
-✓ Bootstrapped FAISS index from rag_project/
-✓ Bootstrapped metadata from rag_project/
+✓ FAISS index found — ready to serve queries
   ✓ Embedding model loaded: all-MiniLM-L6-v2
   ✓ Groq client ready — model: llama-3.1-8b-instant
   ✓ FAISS index loaded — 10 documents
@@ -592,7 +580,7 @@ file: <binary file data>
 **Symptoms**: Query returns error "Knowledge base is not loaded yet"
 
 **Solutions**:
-1. Check that `rag_project/` contains `faiss_index.index` and `metadata.pkl`
+1. Check that `backend/src/data/` contains `faiss_index.index` and `metadata.pkl`
 2. Or upload a file via the dashboard
 3. Check the terminal for startup errors
 
@@ -681,7 +669,7 @@ Open your browser to: **http://localhost:8000/app/index.html**
 
 That's it! The system will automatically:
 - Create the `data/` directory
-- Copy the sample FAISS index from `rag_project/`
+- Load the FAISS index from `backend/src/data/`
 - Download the embedding model (first time only)
 - Initialize the RAG engine
 
@@ -757,14 +745,17 @@ AI Based Knowlege Look up/
 │       ├── 📄 app.py                ← Main FastAPI application
 │       ├── 📄 settings.py           ← Configuration
 │       ├── 📄 requirements.txt      ← Python dependencies
-│       ├── 📄 .env                  ← API keys & settings
+│       ├── 📄 .env                  ← API keys & settings (create from .env.example)
 │       ├── 📁 routes/               ← API endpoints
 │       ├── 📁 services/             ← Business logic
 │       ├── 📁 utils/                ← RAG engine, data loader, helpers
 │       ├── 📁 models/               ← Data models (DTOs)
 │       ├── 📁 constants/            ← HTTP status codes
 │       ├── 📁 migrations/           ← Startup migration
-│       └── 📁 data/                 ← FAISS index files (auto-created)
+│       └── 📁 data/                 ← FAISS index + sample data
+│           ├── 📄 faiss_index.index
+│           ├── 📄 metadata.pkl
+│           └── 📄 shipments.xlsx
 │
 ├── 📁 frontend/
 │   ├── 📄 index.html                ← Landing page + login
@@ -772,13 +763,6 @@ AI Based Knowlege Look up/
 │   ├── 📄 dashboard.html            ← Knowledge base management
 │   ├── 📁 css/styles.css            ← Design system
 │   └── 📁 js/                       ← Auth, chat, dashboard logic
-│
-└── 📁 rag_project/
-    ├── 📄 shipments.xlsx            ← Sample data
-    ├── 📄 faiss_index.index         ← Pre-built index
-    ├── 📄 metadata.pkl              ← Pre-built metadata
-    ├── 📄 load_data.py              ← Original prototype
-    └── 📄 rag_query.py              ← Original prototype
 ```
 
 ---

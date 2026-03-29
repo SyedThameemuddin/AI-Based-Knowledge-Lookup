@@ -211,7 +211,7 @@ Each DataFrame row is converted into a descriptive sentence:
 @asynccontextmanager
 async def lifespan(app):
     # STARTUP:
-    Migration().run_startup_migration()  # Create data/ dir, copy FAISS from rag_project/
+    Migration().run_startup_migration()  # Ensure data/ dir exists
     rag_engine.initialize()               # Load embedding model + FAISS + Groq
     yield
     # SHUTDOWN: (nothing to tear down)
@@ -532,12 +532,10 @@ AI Based Knowlege Look up/
 │       ├── chat.js              ← Chat API integration + session management
 │       └── dashboard.js         ← Dashboard stats, upload, history
 │
-└── rag_project/                 ← Original prototype (kept for reference)
-    ├── load_data.py             ← Original data loading script
-    ├── rag_query.py             ← Original query script
-    ├── shipments.xlsx           ← Sample dataset (10 shipment records)
-    ├── faiss_index.index        ← Pre-built FAISS index
-    └── metadata.pkl             ← Pre-built metadata
+│       └── data/                ← FAISS index + sample data (ships with repo)
+│           ├── faiss_index.index  ← FAISS binary index file
+│           ├── metadata.pkl       ← Pickled metadata (texts + document IDs)
+│           └── shipments.xlsx     ← Sample dataset (10 shipment records)
 ```
 
 ---
@@ -629,7 +627,7 @@ pydantic             # Data validation
 
 | Issue | Cause | Solution |
 |---|---|---|
-| "Knowledge base is not loaded" | No FAISS index found at startup | Upload a file via dashboard, or ensure `rag_project/` has `faiss_index.index` |
+| "Knowledge base is not loaded" | No FAISS index found at startup | Upload a file via dashboard — the sample data in `backend/src/data/` should auto-load |
 | Groq API timeout | Rate limit exceeded on free tier | Wait 1-2 minutes, or upgrade Groq plan |
 | `ModuleNotFoundError` | Missing Python dependency | Run `pip install -r requirements.txt` |
 | Frontend shows "Offline" | Backend not running | Start with `python -m uvicorn app:app --reload` |

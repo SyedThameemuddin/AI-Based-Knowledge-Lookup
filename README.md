@@ -73,9 +73,8 @@ Interactive API docs: `http://localhost:8000/docs`
 
 ```
 AI Based Knowledge Lookup/
-├── backend/src/          # FastAPI backend (RAG engine, API routes)
+├── backend/src/          # FastAPI backend (RAG engine, API routes, sample data)
 ├── frontend/             # Web UI (landing, chat, dashboard)
-├── rag_project/          # Original prototype + sample data
 ├── PROJECT_OVERVIEW.md   # Business documentation
 ├── TECHNICAL_DOCS.md     # Technical documentation
 └── SETUP_GUIDE.md        # Setup & running guide

@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+rag_env/
+.venv/
+env/
+
+# Environment variables (contains API keys!)
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# FAISS runtime data (auto-generated from rag_project/)
+backend/src/data/
+
+# Byte-compiled / cached
+*.pyc
+*.pyo
+
+# Logs
+*.log
+
+# Model cache (downloaded at runtime)
+.cache/

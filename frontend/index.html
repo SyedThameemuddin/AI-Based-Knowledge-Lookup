@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FindX — AI Based Knowledge Lookup</title>
+  <meta name="description" content="AI-powered knowledge retrieval platform. Upload documents and get instant, accurate answers powered by RAG and Groq LLM." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    /* Gradient animated background */
+    body { background: var(--bg-base); position: relative; }
+    .hero-bg {
+      position: fixed;
+      inset: 0;
+      background: var(--grad-hero);
+      background-size: 300% 300%;
+      animation: gradient-shift 12s ease infinite;
+      z-index: 0;
+    }
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 70% 30%, hsla(265,84%,30%,0.35) 0%, transparent 60%),
+                  radial-gradient(ellipse at 20% 80%, hsla(195,90%,30%,0.25) 0%, transparent 50%);
+    }
+    .page-wrap { position: relative; z-index: 1; }
+    /* Input eye toggle */
+    .input-eye {
+      position: absolute;
+      right: 16px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none;
+      color: var(--text-muted);
+      cursor: pointer; font-size: 1rem;
+      transition: var(--transition);
+    }
+    .input-eye:hover { color: var(--text-primary); }
+    .form-input-wrap { position: relative; }
+  </style>
+</head>
+<body>
+  <div class="hero-bg"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="page-wrap">
+    <!-- ── Navigation ── -->
+    <nav class="nav">
+      <a href="index.html" class="nav-logo">
+        <div class="nav-logo-icon">✦</div>
+        <span>Find<span class="gradient-text">X</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#how-it-works" class="nav-link">How It Works</a>
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="chat.html" class="btn btn-primary btn-sm" id="nav-try-btn">Try Now →</a>
+      </div>
+    </nav>
+
+    <!-- ── Hero + Login ── -->
+    <div class="hero-layout">
+      <!-- Left: Hero Content -->
+      <div class="hero-left">
+        <div class="hero-kicker animate-fade-up">
+          <div class="hero-kicker-line"></div>
+          <span class="badge badge-violet badge-dot">Powered by Groq LLM &amp; FAISS</span>
+        </div>
+
+        <h1 class="hero-title animate-fade-up anim-delay-1">
+          Unlock Insights<br />
+          from Any<br />
+          <span class="gradient-text">Knowledge Base</span>
+        </h1>
+
+        <p class="hero-subtitle animate-fade-up anim-delay-2">
+          Upload Excel, CSV, or text documents and get instant, accurate,
+          AI-powered answers — grounded in your actual data. No hallucinations.
+          No guesswork. Just knowledge.
+        </p>
+
+        <div class="hero-actions animate-fade-up anim-delay-3">
+          <a href="chat.html" class="btn btn-primary btn-lg" id="hero-primary-btn">
+            <span>🚀</span> Start Querying
+          </a>
+          <a href="dashboard.html" class="btn btn-secondary btn-lg">
+            <span>📂</span> Upload Data
+          </a>
+        </div>
+
+        <div class="hero-stats animate-fade-up anim-delay-4">
+          <div class="stat-item">
+            <span class="stat-value">RAG</span>
+            <span class="stat-label">Architecture</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">FAISS</span>
+            <span class="stat-label">Vector Search</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">Llama 3.1</span>
+            <span class="stat-label">Open Source LLM</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="hero-doc-count">10+</span>
+            <span class="stat-label">Docs Indexed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Login Card -->
+      <div class="hero-right animate-fade-in anim-delay-2">
+        <div class="glass-card login-card">
+          <div class="login-header">
+            <div class="login-logo">✦</div>
+            <h2 class="login-title">Welcome Back</h2>
+            <p class="login-subtitle">Sign in to access your knowledge base</p>
+          </div>
+
+          <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
+            <div class="form-group">
+              <label class="form-label" for="email-input">Email Address</label>
+              <input
+                id="email-input"
+                type="email"
+                class="form-input"
+                placeholder="you@company.com"
+                required
+                autocomplete="email"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="password-input">Password</label>
+              <div class="form-input-wrap">
+                <input
+                  id="password-input"
+                  type="password"
+                  class="form-input"
+                  placeholder="••••••••"
+                  required
+                  autocomplete="current-password"
+                  style="padding-right: 44px;"
+                />
+                <button type="button" class="input-eye" onclick="togglePassword()" id="eye-btn">👁</button>
+              </div>
+            </div>
+
+            <div id="login-error" style="display:none; color:hsl(0,80%,70%); font-size:0.82rem; text-align:center; padding: 8px; background: hsla(0,70%,50%,0.1); border-radius: var(--radius-sm); border: 1px solid hsla(0,70%,50%,0.3);">
+            </div>
+
+            <button type="submit" class="btn btn-primary login-btn" id="login-btn">
+              Sign In → 
+            </button>
+
+            <div class="login-divider">
+              <div class="login-divider-line"></div>
+              <span class="login-divider-text">Demo credentials</span>
+              <div class="login-divider-line"></div>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-secondary"
+              style="width:100%; justify-content:center; font-size:0.85rem;"
+              onclick="fillDemo()"
+            >🧑‍💼 Use Demo Account</button>
+          </form>
+
+          <div class="login-footer">
+            Don't have an account? <a href="#" onclick="fillDemo()">Sign up free</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Features ── -->
+    <section id="features" class="features-section">
+      <div class="features-header animate-fade-up">
+        <div style="margin-bottom:16px">
+          <span class="badge badge-cyan">Capabilities</span>
+        </div>
+        <h2>Everything You Need to <span class="gradient-text">Know More</span></h2>
+        <p>A complete RAG platform — from document ingestion to intelligent retrieval and generation.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card animate-fade-up anim-delay-1">
+          <div class="feature-icon feature-icon-violet">🧠</div>
+          <h3 class="feature-title">Semantic Search</h3>
+          <p class="feature-desc">Vector embeddings (all-MiniLM-L6-v2) capture the meaning of your query — not just keywords. Find relevant answers even when worded differently.</p>
+        </div>
+        <div class="feature-card animate-fade-up anim-delay-2">
+          <div class="feature-icon feature-icon-cyan">⚡</div>
+          <h3 class="feature-title">Groq LLM Speed</h3>
+          <p class="feature-desc">Powered by Groq's ultra-fast inference API running Llama 3.1 8B — answers generated in under 2 seconds with full accuracy.</p>
+        </div>
+        <div class="feature-card animate-fade-up anim-delay-3">
+          <div class="feature-icon feature-icon-pink">📁</div>
+          <h3 class="feature-title">Multi-Format Upload</h3>
+          <p class="feature-desc">Upload Excel (.xlsx, .xls), CSV, or plain text files. The system auto-parses, chunks, and indexes all content into FAISS instantly.</p>
+        </div>
+        <div class="feature-card animate-fade-up anim-delay-4">
+          <div class="feature-icon feature-icon-emerald">🎯</div>
+          <h3 class="feature-title">Grounded Answers</h3>
+          <p class="feature-desc">Every answer is backed by source citations. The LLM strictly answers from your data — no hallucinations, no fabricated information.</p>
+        </div>
+        <div class="feature-card animate-fade-up anim-delay-5">
+          <div class="feature-icon feature-icon-violet2">🔄</div>
+          <h3 class="feature-title">Live Re-indexing</h3>
+          <p class="feature-desc">Upload a new file anytime to instantly re-index your knowledge base. No restart needed — the engine reloads on the fly.</p>
+        </div>
+        <div class="feature-card animate-fade-up anim-delay-1">
+          <div class="feature-icon feature-icon-orange">🔐</div>
+          <h3 class="feature-title">Open Source Stack</h3>
+          <p class="feature-desc">100% open-source: FastAPI + FAISS + SentenceTransformers + Groq Free API. No vendor lock-in, no cloud costs for core functionality.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── How It Works ── -->
+    <section id="how-it-works" style="padding: 80px; padding-top: 0;">
+      <div class="features-header animate-fade-up">
+        <div style="margin-bottom:16px">
+          <span class="badge badge-violet">Pipeline</span>
+        </div>
+        <h2>How <span class="gradient-text">FindX</span> Works</h2>
+        <p>A four-step RAG (Retrieval-Augmented Generation) pipeline under the hood.</p>
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:24px; margin-top:40px;">
+        <div style="text-align:center; padding:32px 24px; background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-lg);">
+          <div style="font-size:2.5rem;margin-bottom:16px;">📤</div>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent-violet);margin-bottom:8px;">Step 1</div>
+          <h4 style="margin-bottom:8px;">Upload</h4>
+          <p style="font-size:0.83rem;color:var(--text-secondary);">Upload your Excel, CSV, or text file to the dashboard.</p>
+        </div>
+        <div style="text-align:center; padding:32px 24px; background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-lg);">
+          <div style="font-size:2.5rem;margin-bottom:16px;">🔢</div>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent-cyan);margin-bottom:8px;">Step 2</div>
+          <h4 style="margin-bottom:8px;">Embed</h4>
+          <p style="font-size:0.83rem;color:var(--text-secondary);">Content is converted into 384-dim vectors using SentenceTransformers.</p>
+        </div>
+        <div style="text-align:center; padding:32px 24px; background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-lg);">
+          <div style="font-size:2.5rem;margin-bottom:16px;">🔍</div>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent-pink);margin-bottom:8px;">Step 3</div>
+          <h4 style="margin-bottom:8px;">Retrieve</h4>
+          <p style="font-size:0.83rem;color:var(--text-secondary);">FAISS finds the most semantically similar chunks to your query.</p>
+        </div>
+        <div style="text-align:center; padding:32px 24px; background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-lg);">
+          <div style="font-size:2.5rem;margin-bottom:16px;">💬</div>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent-emerald);margin-bottom:8px;">Step 4</div>
+          <h4 style="margin-bottom:8px;">Generate</h4>
+          <p style="font-size:0.83rem;color:var(--text-secondary);">Groq's Llama 3.1 generates a grounded, accurate answer from the retrieved context.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Footer ── -->
+    <footer style="border-top:1px solid var(--border); padding: 32px 80px; display:flex; align-items:center; justify-content:space-between; background:var(--bg-surface);">
+      <div class="nav-logo" style="text-decoration:none; display:flex; align-items:center; gap:10px;">
+        <div class="nav-logo-icon">✦</div>
+        <span style="font-family:var(--font-display); font-weight:700;">Find<span class="gradient-text">X</span></span>
+      </div>
+      <div style="font-size:0.8rem; color:var(--text-muted);">AI Based Knowledge Lookup — College Project &copy; 2026</div>
+      <div style="display:flex; gap:16px;">
+        <a href="chat.html" style="font-size:0.85rem; color:var(--text-secondary); text-decoration:none;">Chat</a>
+        <a href="dashboard.html" style="font-size:0.85rem; color:var(--text-secondary); text-decoration:none;">Dashboard</a>
+        <a href="http://localhost:8000/docs" target="_blank" style="font-size:0.85rem; color:var(--text-secondary); text-decoration:none;">API Docs</a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script>
+    // ── Login handler ─────────────────────────────────────────
+    function handleLogin(e) {
+      e.preventDefault();
+      const email    = document.getElementById('email-input').value.trim();
+      const password = document.getElementById('password-input').value;
+      const errEl    = document.getElementById('login-error');
+      const btn      = document.getElementById('login-btn');
+
+      btn.textContent = 'Signing in…';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        const result = login(email, password);
+        if (result.success) {
+          btn.textContent = '✓ Redirecting…';
+          const base = window.location.pathname.includes('/app/') ? '/app/' : '';
+          window.location.href = base + 'chat.html';
+        } else {
+          errEl.textContent  = result.message;
+          errEl.style.display = 'block';
+          btn.textContent = 'Sign In →';
+          btn.disabled = false;
+        }
+      }, 600);
+    }
+
+    function fillDemo() {
+      document.getElementById('email-input').value    = 'demo@findx.io';
+      document.getElementById('password-input').value = 'demo1234';
+    }
+
+    function togglePassword() {
+      const inp = document.getElementById('password-input');
+      const btn = document.getElementById('eye-btn');
+      if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+      else { inp.type = 'password'; btn.textContent = '👁'; }
+    }
+
+    // If already logged in, show "Go to Chat" in nav
+    const existingUser = getUser();
+    if (existingUser) {
+      document.getElementById('nav-try-btn').textContent = `Welcome back, ${existingUser.name.split(' ')[0]} →`;
+      document.getElementById('hero-primary-btn').textContent = '🚀 Continue Chatting';
+    }
+
+    // Live doc count from health API
+    fetch('http://localhost:8000/api/v1/health')
+      .then(r => r.json())
+      .then(j => {
+        const count = j.data?.rag_engine?.document_count;
+        if (count !== undefined) document.getElementById('hero-doc-count').textContent = count + '+';
+      }).catch(() => {});
+  </script>
+</body>
+</html>

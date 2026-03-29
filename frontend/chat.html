@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FindX — Chat</title>
+  <meta name="description" content="Ask questions from your knowledge base powered by AI." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    body { overflow: hidden; }
+
+    /* Sidebar upload mini-button */
+    .upload-mini {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      background: var(--bg-elevated);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      transition: var(--transition);
+      width: 100%;
+      text-align: left;
+    }
+    .upload-mini:hover { border-color: var(--accent-violet); color: var(--accent-violet); }
+
+    /* top-k control */
+    .topk-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .topk-input {
+      width: 48px;
+      padding: 4px 6px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 0.8rem;
+      text-align: center;
+      outline: none;
+    }
+    .topk-input:focus { border-color: var(--accent-violet); }
+
+    /* Markdown code styling */
+    .message-bubble code {
+      background: var(--bg-card);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85em;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Welcome state — shown by default, hidden via JS when user sends a message */
+    #welcome-state { display: flex; }
+  </style>
+</head>
+<body>
+  <div class="chat-layout">
+    <!-- ── SIDEBAR ─────────────────────────────── -->
+    <aside class="chat-sidebar">
+      <!-- Header -->
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo">
+          <div class="sidebar-logo-icon">✦</div>
+          <span>Find<span class="gradient-text">X</span></span>
+        </a>
+        <a href="dashboard.html" class="btn btn-ghost btn-icon" title="Dashboard">📊</a>
+      </div>
+
+      <!-- New Chat -->
+      <div style="padding: 12px;">
+        <button class="btn btn-secondary new-chat-btn" onclick="startNewSession(); if(welcomeState) welcomeState.style.display='flex';">
+          ✦ New Chat
+        </button>
+      </div>
+
+      <!-- Quick Prompts -->
+      <div class="sidebar-section-title">Suggestions</div>
+      <div class="quick-prompts">
+        <button class="quick-prompt-chip" onclick="sendQuickPrompt('What data is available in the knowledge base?')">
+          🔍 What data is available?
+        </button>
+        <button class="quick-prompt-chip" onclick="sendQuickPrompt('Show me a summary of all shipments.')">
+          📦 Summarize all shipments
+        </button>
+        <button class="quick-prompt-chip" onclick="sendQuickPrompt('Which shipments are delayed or pending?')">
+          ⏳ Delayed or pending items
+        </button>
+        <button class="quick-prompt-chip" onclick="sendQuickPrompt('Who is the carrier for shipment SHP001?')">
+          🚚 Carrier for SHP001
+        </button>
+      </div>
+
+      <!-- Upload -->
+      <div style="padding: 0 12px 12px;">
+        <div class="sidebar-section-title" style="padding: 8px 8px;">Knowledge Base</div>
+        <label class="upload-mini" for="sidebar-file-input">
+          📤 Upload new file
+          <input type="file" id="sidebar-file-input" accept=".xlsx,.xls,.csv,.txt" style="display:none" onchange="handleSidebarUpload(this.files[0])" />
+        </label>
+        <div id="sidebar-upload-msg" style="font-size:0.75rem;color:var(--text-muted);padding:6px 8px;display:none;"></div>
+      </div>
+
+      <!-- Chat History -->
+      <div class="sidebar-section-title">Recent Sessions</div>
+      <div class="chat-history" id="history-list"></div>
+
+      <div style="padding:0 12px 8px;">
+        <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;font-size:0.75rem;" onclick="clearSessions()">
+          🗑 Clear history
+        </button>
+      </div>
+
+      <!-- Top-K control -->
+      <div class="topk-row">
+        <label for="top-k-input">Sources:</label>
+        <input type="number" id="top-k-input" class="topk-input" value="3" min="1" max="10" />
+        <span>per query</span>
+      </div>
+
+      <!-- User Profile -->
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar" data-user-initials>NX</div>
+          <div>
+            <div class="user-name" data-user-name>Loading…</div>
+            <div class="user-role" data-user-role>Knowledge Analyst</div>
+          </div>
+          <button class="btn btn-ghost btn-icon" onclick="logout()" title="Sign out" style="margin-left:auto; font-size:0.85rem;">↩</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── CHAT MAIN ───────────────────────────── -->
+    <main class="chat-main">
+      <!-- Header -->
+      <div class="chat-header">
+        <div>
+          <div class="chat-header-title">Knowledge Lookup Chat</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">Powered by FAISS + Groq Llama 3.1</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="chat-header-status">
+            <div class="status-dot"></div>
+            <span id="engine-status">Checking…</span>
+            <span id="doc-count" style="color:var(--text-muted);"></span>
+          </div>
+          <div class="header-actions">
+            <a href="dashboard.html" class="btn btn-secondary btn-sm">📊 Dashboard</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="messages-area" id="messages-area">
+
+        <!-- Welcome (shown when no messages) -->
+        <div class="chat-welcome" id="welcome-state">
+          <div>
+            <div class="welcome-icon">✦</div>
+            <h2 class="welcome-title">Ask <span class="gradient-text">Anything</span></h2>
+            <p class="welcome-subtitle">Query your knowledge base using natural language. I'll retrieve the most relevant information and generate an accurate answer.</p>
+          </div>
+          <div class="welcome-chips">
+            <button class="welcome-chip" onclick="sendQuickPrompt('What data is available in the knowledge base?')">📊 What data is available?</button>
+            <button class="welcome-chip" onclick="sendQuickPrompt('Show me all shipments and their current status.')">📦 Show all shipments</button>
+            <button class="welcome-chip" onclick="sendQuickPrompt('Which items were delivered successfully?')">✅ Delivered items</button>
+            <button class="welcome-chip" onclick="sendQuickPrompt('What is the total value of all shipments?')">💰 Shipment values</button>
+            <button class="welcome-chip" onclick="sendQuickPrompt('List all carriers used in our shipments.')">🚚 All carriers</button>
+            <button class="welcome-chip" onclick="sendQuickPrompt('Which shipment has the highest value?')">🏆 Highest value shipment</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Input Bar -->
+      <div class="chat-input-area">
+        <div class="input-box" id="input-box">
+          <textarea
+            id="chat-input"
+            class="chat-textarea"
+            placeholder="Ask a question about your knowledge base… (Enter to send, Shift+Enter for new line)"
+            rows="1"
+          ></textarea>
+          <div class="input-actions">
+            <label class="btn btn-ghost btn-icon" for="inline-file-input" title="Upload file">
+              📎
+              <input type="file" id="inline-file-input" accept=".xlsx,.xls,.csv,.txt" style="display:none" onchange="handleSidebarUpload(this.files[0])" />
+            </label>
+            <button class="send-btn" id="send-btn" title="Send message">➤</button>
+          </div>
+        </div>
+        <div class="input-hint">FindX may produce inaccurate results. Always verify critical information.</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/chat.js"></script>
+  <script>
+    // Sidebar quick upload
+    async function handleSidebarUpload(file) {
+      if (!file) return;
+      const msgEl = document.getElementById('sidebar-upload-msg');
+      msgEl.style.display = 'block';
+      msgEl.textContent   = '⏳ Indexing…';
+      msgEl.style.color   = 'var(--accent-violet)';
+
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const res  = await fetch('http://localhost:8000/api/v1/upload', { method:'POST', body:formData });
+        const json = await res.json();
+        if (res.ok && !json.errors?.length) {
+          msgEl.textContent = `✅ ${json.data.document_count} docs indexed`;
+          msgEl.style.color = 'var(--accent-emerald)';
+          checkBackendHealth();
+        } else {
+          msgEl.textContent = '❌ Upload failed';
+          msgEl.style.color = 'hsl(0,80%,70%)';
+        }
+      } catch {
+        msgEl.textContent = '❌ Server unreachable';
+        msgEl.style.color = 'hsl(0,80%,70%)';
+      }
+      setTimeout(() => { msgEl.style.display = 'none'; }, 5000);
+    }
+  </script>
+</body>
+</html>

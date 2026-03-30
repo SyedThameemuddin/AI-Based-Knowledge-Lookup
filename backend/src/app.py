@@ -81,10 +81,14 @@ async def app_chat():
 async def app_dashboard():
     return FileResponse(os.path.join(_frontend_dir, "dashboard.html"))
 
+@app.get("/app/history")
+async def app_history():
+    return FileResponse(os.path.join(_frontend_dir, "history.html"))
+
 # Static assets (CSS, JS, images) still served via mount
 if os.path.isdir(_frontend_dir):
     app.mount("/app", StaticFiles(directory=_frontend_dir, html=False), name="frontend")
-    print(f"✓ Frontend: http://localhost:8000/app/chat | /app/dashboard")
+    print(f"✓ Frontend: http://localhost:8000/app/chat | /app/dashboard | /app/history")
 
 
 # ── Global Exception Handlers ─────────────────────────────────────

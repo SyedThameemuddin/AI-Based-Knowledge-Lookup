@@ -69,7 +69,11 @@ Open **http://localhost:8000/app/** → Login → Ask questions!
 | `GET` | `/api/v1/health` | System health check |
 | `GET` | `/api/v1/history` | Recent query history |
 
-Interactive API docs: `http://localhost:8000/docs`
+**Frontend Pages:**
+- `http://localhost:8000/app/` (Landing)
+- `http://localhost:8000/app/chat` (Chat interface)
+- `http://localhost:8000/app/dashboard` (Stats & Upload)
+- `http://localhost:8000/app/history` (Detailed query feed)
 
 ---
 

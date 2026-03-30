@@ -96,6 +96,7 @@ Once the server starts (you'll see `Application startup complete`):
 | **Login** | Use any email + password (e.g., `demo@findx.io` / `demo1234`) |
 | **Chat** | http://localhost:8000/app/chat |
 | **Dashboard** | http://localhost:8000/app/dashboard |
+| **History** | http://localhost:8000/app/history |
 | **API Docs** | http://localhost:8000/docs |
 
 ---
@@ -248,6 +249,7 @@ Once the server is running, open your browser and go to:
 | **Home / Login** | http://localhost:8000/app/ | Landing page with login form |
 | **Chat** | http://localhost:8000/app/chat | AI chatbot interface |
 | **Dashboard** | http://localhost:8000/app/dashboard | Knowledge base management |
+| **History** | http://localhost:8000/app/history | Complete query history feed |
 | **API Docs** | http://localhost:8000/docs | Interactive Swagger documentation |
 | **Root Redirect** | http://localhost:8000/ | Redirects to landing page |
 

@@ -156,9 +156,9 @@ Here is the exact flow for a 10-15 minute presentation or pitch:
 **Step 6: Show Sources**
 > *"Notice the '📚 3 sources retrieved' panel — click it to see the exact data records the answer came from. Full transparency. Full verifiability."*
 
-**Step 7: Show the Dashboard**
+**Step 7: Show the Dashboard & History**
 > Navigate to Dashboard
-> *"And here's the management dashboard — 10 documents indexed, engine active, upload zone for new files, query history. Everything an admin needs."*
+> *"And here's the management dashboard — 10 documents indexed, engine active, upload zone for new files. We also have a dedicated History view to monitor all organizational queries."*
 
 **Step 8: Show File Upload (Optional)**
 > *"Want to change the data? Just drag a new file here. The AI reindexes in seconds — no restart, no downtime."*

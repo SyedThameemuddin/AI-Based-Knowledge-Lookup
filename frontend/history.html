@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FindX — History</title>
+  <meta name="description" content="View your AI knowledge lookup query history." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    body { overflow-y: auto; }
+    
+    /* Timeline feed styles */
+    .history-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      margin-top: 24px;
+    }
+    
+    .history-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      transition: var(--transition);
+      position: relative;
+    }
+    
+    .history-card:hover {
+      border-color: var(--border-glow);
+      box-shadow: 0 8px 32px hsla(0, 0%, 0%, 0.3);
+    }
+    
+    .history-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .history-query {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .history-query::before {
+      content: "Q: ";
+      color: var(--accent-violet);
+    }
+    
+    .history-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .history-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    
+    .history-answer {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+    
+    .history-answer p { margin-bottom: 1em; }
+    .history-answer p:last-child { margin-bottom: 0; }
+    .history-answer ul, .history-answer ol { padding-left: 20px; margin-bottom: 1em; }
+    .history-answer li { margin-bottom: 0.5em; }
+    .history-answer code {
+      background: var(--bg-elevated);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85em;
+      color: var(--accent-cyan);
+    }
+    
+    .empty-history {
+      text-align: center;
+      padding: 60px 20px;
+      background: var(--bg-surface);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-lg);
+      margin-top: 24px;
+    }
+    
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- ── SIDEBAR ─────────────────────────────── -->
+    <aside class="dashboard-sidebar">
+      <a href="/app/" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text-primary);font-family:var(--font-display);font-weight:700;font-size:1.1rem;">
+        <div style="width:34px;height:34px;background:var(--grad-accent);border-radius:8px;display:flex;align-items:center;justify-content:center;">✦</div>
+        Find<span class="gradient-text" style="margin-left:4px;">X</span>
+      </a>
+
+      <nav class="dash-nav-links">
+        <a href="/app/chat"      class="dash-nav-item">💬 Chat</a>
+        <a href="/app/dashboard" class="dash-nav-item">📊 Dashboard</a>
+        <a href="/app/history"   class="dash-nav-item active">🕒 History</a>
+        <a href="http://localhost:8000/docs" target="_blank" class="dash-nav-item">🔌 API Docs</a>
+      </nav>
+
+      <!-- System Status -->
+      <div style="margin-top:auto; padding: 16px 0; border-top: 1px solid var(--border);">
+        <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">System Status</div>
+        <div style="font-size:0.78rem; color:var(--text-muted); padding:8px 10px; background:var(--bg-elevated); border-radius:var(--radius-sm);">
+          Backend: <span style="color:var(--accent-cyan);">localhost:8000</span>
+        </div>
+      </div>
+
+      <!-- User -->
+      <div style="padding-top:16px; border-top:1px solid var(--border); margin-top:16px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="user-avatar" data-user-initials style="width:34px;height:34px;font-size:0.8rem;">NX</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:0.85rem; font-weight:600;" data-user-name>User</div>
+            <div style="font-size:0.72rem; color:var(--text-muted);" data-user-email></div>
+          </div>
+          <button class="btn btn-ghost btn-icon" onclick="logout()" title="Sign out" style="font-size:0.85rem; flex-shrink:0;">↩</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── MAIN ──────────────────────────────────── -->
+    <main class="dashboard-main">
+
+      <!-- Header -->
+      <div class="dashboard-header animate-fade-up">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <h1>🕒 System Query History</h1>
+            <p>A global feed of recent interactions processed by the RAG backend.</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn btn-secondary btn-sm" id="refresh-btn" onclick="loadFullHistory(true)">
+              🔄 Refresh Feed
+            </button>
+            <a href="/app/chat" class="btn btn-primary btn-sm">💬 New Query</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feed Container -->
+      <div id="history-feed-container" class="history-feed animate-fade-up anim-delay-1">
+        <!-- Injected via JS -->
+        <div style="text-align:center; padding: 40px; color: var(--text-muted);">
+          Loading history...
+        </div>
+      </div>
+      
+      <!-- Footer spacer -->
+      <div style="height:60px;"></div>
+    </main>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/history.js"></script>
+</body>
+</html>

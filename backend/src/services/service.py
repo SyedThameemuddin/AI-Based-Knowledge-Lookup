@@ -34,18 +34,7 @@ class KnowledgeService:
         try:
             print(f"\n🔍 Query service: '{user_query}' (top_k={top_k})")
 
-            if not rag_engine.is_ready():
-                raise CustomAppException(
-                    message=(
-                        "Knowledge base is not loaded yet. "
-                        "Please upload a file via POST /api/v1/upload first."
-                    ),
-                    code=ErrorCode.INTERNAL_SERVER_ERROR,
-                    status_code=HttpStatusCode.BAD_REQUEST,
-                    error_code_id=ErrorCodeStatus.get(
-                        ErrorCode.INTERNAL_SERVER_ERROR, "KB_RAG_001"
-                    )
-                )
+            # Let RAGEngine handle whether it has data or not, so conversational greetings still work
 
             result = rag_engine.query(user_query, top_k)
             print("✅ Query completed successfully")

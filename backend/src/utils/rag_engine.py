@@ -140,20 +140,22 @@ class RAGEngine:
             [f"[Source {i + 1}]: {c['text']}" for i, c in enumerate(context_chunks)]
         )
 
-        prompt = f"""You are an intelligent AI knowledge lookup assistant.
-Answer the user's question using ONLY the context provided below.
-If the context does not contain enough information, clearly state that.
+        prompt = f"""You are FindX, an intelligent AI knowledge lookup assistant.
+You help users query their business datasets (Excel, CSV, Text files) using natural language.
+
+Instructions:
+- If the user says a casual greeting (e.g., "hi", "who are you", "hello", "what do you do"), respond politely introducing yourself as FindX. Explain that the user can upload documents to the dashboard, and you will answer any questions about the data.
+- For all other questions, answer using ONLY the data in the Context below.
+- If the Context is empty or does not contain enough information to answer the question, clearly state that you don't have enough data in the current knowledge base and suggest they upload a relevant document.
+- Be concise and accurate.
+- Reference specific data points from the context when relevant.
+- Format the answer in a readable way.
+- Do not fabricate information not present in the context.
 
 Context:
 {context}
 
 Question: {query}
-
-Instructions:
-- Be concise and accurate
-- Reference specific data points from the context when relevant
-- Format the answer in a readable way
-- Do not fabricate information not present in the context
 """
 
         response = self.groq_client.chat.completions.create(
@@ -169,7 +171,11 @@ Instructions:
         Full RAG pipeline: search → generate.
         Returns {answer, sources, query, document_count}.
         """
-        results = self.search(user_query, top_k)
+        if not self.is_ready():
+            results = []
+        else:
+            results = self.search(user_query, top_k)
+            
         answer = self.generate_answer(user_query, results)
 
         return {

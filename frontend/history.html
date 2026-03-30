@@ -147,6 +147,10 @@
             <p>A global feed of recent interactions processed by the RAG backend.</p>
           </div>
           <div style="display:flex; gap:10px; align-items:center;">
+            <select id="sort-select" class="form-input" style="width:auto; padding: 6px 30px 6px 12px; font-size:0.85rem;" onchange="renderHistory()">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+            </select>
             <button class="btn btn-secondary btn-sm" id="refresh-btn" onclick="loadFullHistory(true)">
               🔄 Refresh Feed
             </button>

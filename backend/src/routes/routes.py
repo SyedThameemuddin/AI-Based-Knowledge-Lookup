@@ -49,9 +49,11 @@ class KnowledgeRoutes:
                 top_k=request.top_k
             )
 
-            # Store in history (keep last 50)
+            from datetime import datetime
             _query_history.append({
+                "timestamp": datetime.now().isoformat(),
                 "query": request.user_query,
+                "answer": resp["answer"],
                 "answer_preview": (
                     resp["answer"][:120] + "..."
                     if len(resp["answer"]) > 120

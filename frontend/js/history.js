@@ -1,6 +1,8 @@
 // js/history.js — History feed logic for FindX
 const API_BASE = 'http://localhost:8000/api/v1';
 
+let globalHistoryData = [];
+
 document.addEventListener('DOMContentLoaded', () => {
   const user = requireAuth();
   populateUserUI(user);
@@ -8,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadFullHistory(forceRefresh = false) {
-  const container = document.getElementById('history-feed-container');
   const btn = document.getElementById('refresh-btn');
   
   if (forceRefresh && btn) btn.classList.add('spinning');
@@ -16,55 +17,73 @@ async function loadFullHistory(forceRefresh = false) {
   try {
     const res = await fetch(`${API_BASE}/history`);
     const json = await res.json();
-    const history = json.data || [];
-
-    if (history.length === 0) {
-      container.innerHTML = `
-        <div class="empty-history">
-          <div class="empty-icon">💭</div>
-          <p>Your history is empty.</p>
-          <a href="/app/chat" class="btn btn-primary" style="margin-top:16px;">Ask a Question</a>
-        </div>`;
-      return;
-    }
-
-    container.innerHTML = '';
-    
-    // Reverse so newest is at the top
-    const reversed = [...history].reverse();
-
-    reversed.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'history-card animate-fade-up';
-      
-      const timeStr = item.timestamp 
-        ? new Date(item.timestamp).toLocaleString() 
-        : 'Recent session';
-
-      card.innerHTML = `
-        <div class="history-card-header">
-          <div class="history-query">${escapeHtml(item.query)}</div>
-        </div>
-        <div class="history-answer markdown-body">
-          ${renderMarkdown(item.answer)}
-        </div>
-        <div class="history-meta mt-3">
-          <span class="badge badge-violet">${item.source_count || 0} Sources</span>
-          <span class="badge badge-cyan" style="font-size:0.7rem;">💬 Chat API</span>
-          <span class="history-time" style="margin-left:auto;">${timeStr}</span>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-    
+    globalHistoryData = json.data || [];
+    renderHistory();
   } catch (err) {
     console.error('Failed to load history:', err);
-    container.innerHTML = `<div class="empty-history" style="color:var(--accent-pink);">❌ Failed to load history feed.</div>`;
+    document.getElementById('history-feed-container').innerHTML = 
+      `<div class="empty-history" style="color:var(--accent-pink);">❌ Failed to load history feed.</div>`;
   } finally {
     if (forceRefresh && btn) {
       setTimeout(() => btn.classList.remove('spinning'), 500);
     }
   }
+}
+
+function renderHistory() {
+  const container = document.getElementById('history-feed-container');
+  const sortOrder = document.getElementById('sort-select')?.value || 'newest';
+
+  if (globalHistoryData.length === 0) {
+    container.innerHTML = `
+      <div class="empty-history">
+        <div class="empty-icon">💭</div>
+        <p>Your history is empty.</p>
+        <a href="/app/chat" class="btn btn-primary" style="margin-top:16px;">Ask a Question</a>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  
+  // Create a copy to sort
+  let itemsToRender = [...globalHistoryData];
+  
+  // Sort based on timestamp
+  if (sortOrder === 'newest') {
+    // Reversing puts newest at top, since backend appends dynamically to end of array
+    itemsToRender.reverse();
+  } else {
+    // 'oldest' means keep the array as it was appended (chronological)
+    // No reverse needed since it's already chronological from backend
+  }
+
+  itemsToRender.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'history-card animate-fade-up';
+    
+    // Format timestamp nicely
+    let timeStr = 'Recent session';
+    if (item.timestamp) {
+      const dateObj = new Date(item.timestamp);
+      timeStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    card.innerHTML = `
+      <div class="history-card-header">
+        <div class="history-query">${escapeHtml(item.query)}</div>
+      </div>
+      <div class="history-answer markdown-body">
+        ${renderMarkdown(item.answer || item.answer_preview)}
+      </div>
+      <div class="history-meta mt-3">
+        <span class="badge badge-violet">${item.source_count || 0} Sources</span>
+        <span class="badge badge-cyan" style="font-size:0.7rem;">💬 Chat API</span>
+        <span class="history-time" style="margin-left:auto;">📅 ${timeStr}</span>
+      </div>
+    `;
+    container.appendChild(card);
+  });
 }
 
 // ── Markdown Parser (Reused from chat.js) ──────────────────────────────────

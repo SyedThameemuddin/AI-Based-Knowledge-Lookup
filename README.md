@@ -15,6 +15,8 @@ FindX is an AI-powered chatbot that lets you upload Excel, CSV, or text files an
 | 📁 **Multi-Format** | Supports `.xlsx`, `.csv`, `.txt` uploads |
 | 🎯 **No Hallucinations** | Answers only from your data, with source citations |
 | 🔄 **Live Re-Indexing** | Upload new files anytime — no restart needed |
+| 🌊 **Streaming Responses** | Typewriter effect with real-time AI output |
+| 📋 **Response Metadata** | Response time, source count, model info, copy button |
 | 💬 **Chat History** | Saved sessions in browser |
 | 📊 **Dashboard** | Stats, upload zone, query history |
 | 🔓 **100% Open Source** | FAISS + Llama 3.1 + FastAPI |
@@ -53,6 +55,8 @@ Open **http://localhost:8000/app/index.html** → Login → Ask questions!
 | [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) | Full business overview — for everyone |
 | [TECHNICAL_DOCS.md](TECHNICAL_DOCS.md) | Complete technical architecture — for developers |
 | [SETUP_GUIDE.md](SETUP_GUIDE.md) | Step-by-step setup & running guide — for any machine |
+| [PITCH_GUIDE.md](PITCH_GUIDE.md) | Presentation & business pitch guide |
+| [openapi.yaml](backend/src/openapi.yaml) | OpenAPI 3.0.3 API specification |
 
 ---
 
@@ -74,10 +78,13 @@ Interactive API docs: `http://localhost:8000/docs`
 ```
 AI Based Knowledge Lookup/
 ├── backend/src/          # FastAPI backend (RAG engine, API routes, sample data)
+│   ├── data/             # Sample datasets (shipments.xlsx, customer_reviews.csv)
+│   └── openapi.yaml      # OpenAPI 3.0.3 specification
 ├── frontend/             # Web UI (landing, chat, dashboard)
 ├── PROJECT_OVERVIEW.md   # Business documentation
 ├── TECHNICAL_DOCS.md     # Technical documentation
-└── SETUP_GUIDE.md        # Setup & running guide
+├── SETUP_GUIDE.md        # Setup & running guide
+└── PITCH_GUIDE.md        # Presentation & pitch guide
 ```
 
 ---

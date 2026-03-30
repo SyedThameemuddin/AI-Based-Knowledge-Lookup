@@ -122,7 +122,7 @@ class DataLoader:
             from groq import Groq
             from settings import config
             sample_texts = "\n".join(texts[:3])
-            prompt = f"Based on the following sample rows from a dataset, suggest exactly 4 diverse and helpful natural language questions a user might ask about this data. Make them short. Output strictly 4 questions separated by newlines, starting each with a relevant single emoji. For example: '📊 What is the total count?'. Do not output anything else.\n\nDataset Sample:\n{sample_texts}"
+            prompt = f"Based on the following sample rows from a dataset, suggest exactly 4 diverse and helpful natural language questions a user might ask about this data. Make them short. Output strictly 4 questions separated by a single pipe character '|', starting each with a relevant single emoji. For example: '📊 What is the total count? | 👥 Who is the main customer?'. Do not output anything else.\n\nDataset Sample:\n{sample_texts}"
             
             client = Groq(api_key=config.GROQ_API_KEY)
             resp = client.chat.completions.create(
@@ -132,14 +132,15 @@ class DataLoader:
                 max_tokens=150
             )
             suggestions_text = resp.choices[0].message.content.strip()
-            # Split by actual newline, and remove any numbering (e.g., "1. ")
+            # Split by the pipe character
             suggestions = []
-            for s in suggestions_text.split('\n'):
+            for s in suggestions_text.split('|'):
                 s = s.strip()
                 if not s: continue
                 # Remove leading numbers/bullets if the LLM adds them despite instructions
                 s = __import__('re').sub(r"^\d+[\.\)]\s*", "", s)
                 s = s.strip('-* \t')
+                s = s.replace('\n', '').replace('\r', '') # Strip any stray newlines inserted by the LLM
                 if s: suggestions.append(s)
 
             # Ensure we have at least 4, fallback if LLM messes up

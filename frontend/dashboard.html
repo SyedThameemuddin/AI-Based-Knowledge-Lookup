@@ -489,47 +489,17 @@
     setTimeout(updateProgressBars, 1200);
 
     // Dashboard Data Downloader
-    async function downloadDashboardData(btn) {
+    function downloadDashboardData(btn) {
       const ogHtml = btn.innerHTML;
       btn.innerHTML = '⏳ Downloading...';
-      try {
-        const API_BASE = 'http://localhost:8000/api/v1';
-        const res = await fetch(`${API_BASE}/download`);
-        if (!res.ok) throw new Error('Download failed from API');
-
-        let filename = 'dashboard_dataset.csv'; 
-        const disposition = res.headers.get('content-disposition');
-        if (disposition && disposition.includes('filename=')) {
-          const match = disposition.match(/filename="?([^"]+)"?/);
-          if (match && match[1]) filename = match[1];
-        }
-
-        const blob = await res.blob();
-        if (blob.size === 0) throw new Error('Empty file received');
-
-        // Force native download via blob object URL
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        
-        // Cleanup explicitly after sufficient delay
-        setTimeout(() => {
-          window.URL.revokeObjectURL(url);
-          if (a.parentNode) {
-            document.body.removeChild(a);
-          }
-        }, 1000);
-        
+      
+      const API_BASE = 'http://localhost:8000/api/v1';
+      window.location.assign(`${API_BASE}/download`);
+      
+      setTimeout(() => {
         btn.innerHTML = '✅ Success';
         setTimeout(() => btn.innerHTML = ogHtml, 3000);
-      } catch (err) {
-        console.error(err);
-        btn.innerHTML = '❌ No Data';
-        setTimeout(() => btn.innerHTML = ogHtml, 3000);
-      }
+      }, 1000);
     }
   </script>
 </body>

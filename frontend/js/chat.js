@@ -16,44 +16,17 @@ const historyList    = document.getElementById('history-list');
 const topKInput      = document.getElementById('top-k-input');
 
 // ── Download Support ──────────────────────────────────────────────
-async function triggerFileDownload(btn) {
+function triggerFileDownload(btn) {
   const ogHtml = btn.innerHTML;
   btn.innerHTML = '<span>Downloading...</span>';
-  try {
-    const res = await fetch(`${API_BASE}/download`);
-    if (!res.ok) throw new Error('Download failed');
-    
-    // Attempt extracting filename
-    let filename = 'updated_dataset.csv'; 
-    const disposition = res.headers.get('content-disposition');
-    if (disposition && disposition.includes('filename=')) {
-      const match = disposition.match(/filename="?([^"]+)"?/);
-      if (match && match[1]) filename = match[1];
-    }
-    
-    // Generate blob url and dispatch click natively
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    
-    // Crucial delay to avoid Chrome race condition masking filename
-    setTimeout(() => {
-      window.URL.revokeObjectURL(url);
-      if (a.parentNode) {
-        document.body.removeChild(a);
-      }
-    }, 1000);
-    
+  
+  // Directly trigger the browser's native download manager
+  window.location.assign(`${API_BASE}/download`);
+  
+  setTimeout(() => {
     btn.innerHTML = '<span>✅ Success</span>';
     setTimeout(() => btn.innerHTML = ogHtml, 3000);
-  } catch(err) {
-    btn.innerHTML = '<span>❌ Failed</span>';
-    setTimeout(() => btn.innerHTML = ogHtml, 3000);
-  }
+  }, 1000);
 }
 
 

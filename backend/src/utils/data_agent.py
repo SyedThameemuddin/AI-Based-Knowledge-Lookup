@@ -93,7 +93,7 @@ Return ONLY the valid Python code to update `df` in-memory. DO NOT return markdo
             from utils.data_loader import DataLoader
             DataLoader().load_and_index(rag_engine.dataset_path)
 
-            full_response = f"### 🤖 Data Agent Executed:\\n`{code_response}`\\n\\n---\\n**✅ Update Complete!**\\nThe dataset has been successfully modified in memory and saved to disk."
+            full_response = f"### 🤖 Data Agent Executed:\n`{code_response}`\n\n---\n**✅ Update Complete!**\nThe dataset has been successfully modified in memory and saved to disk."
 
             return {
                 "status": "success",

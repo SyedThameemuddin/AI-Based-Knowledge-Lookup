@@ -15,6 +15,42 @@ const welcomeState   = document.getElementById('welcome-state');
 const historyList    = document.getElementById('history-list');
 const topKInput      = document.getElementById('top-k-input');
 
+// ── Download Support ──────────────────────────────────────────────
+async function triggerFileDownload(btn) {
+  const ogHtml = btn.innerHTML;
+  btn.innerHTML = '<span>Downloading...</span>';
+  try {
+    const res = await fetch(`${API_BASE}/download`);
+    if (!res.ok) throw new Error('Download failed');
+    
+    // Attempt extracting filename
+    let filename = 'updated_dataset.csv'; 
+    const disposition = res.headers.get('content-disposition');
+    if (disposition && disposition.includes('filename=')) {
+      const match = disposition.match(/filename="?([^"]+)"?/);
+      if (match && match[1]) filename = match[1];
+    }
+    
+    // Generate blob url and dispatch click natively
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    btn.innerHTML = '<span>✅ Success</span>';
+    setTimeout(() => btn.innerHTML = ogHtml, 3000);
+  } catch(err) {
+    btn.innerHTML = '<span>❌ Failed</span>';
+    setTimeout(() => btn.innerHTML = ogHtml, 3000);
+  }
+}
+
+
 // ── Initialize ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   const user = requireAuth();
@@ -279,9 +315,9 @@ function buildResponseMeta(sourceCount, elapsed, fileUpdated = false) {
         Copy
       </button>
       ${fileUpdated ? `
-      <button class="meta-chip meta-download" style="border-color: var(--accent-emerald); color: var(--accent-emerald);" onclick="window.location.href='${API_BASE}/download'">
+      <button class="meta-chip meta-download" style="border-color: var(--accent-emerald); color: var(--accent-emerald);" onclick="triggerFileDownload(this)">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download CSV/Excel
+        <span>Download CSV/Excel</span>
       </button>
       ` : ''}
     </div>

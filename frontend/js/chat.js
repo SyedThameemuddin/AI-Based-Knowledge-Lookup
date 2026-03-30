@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   sendBtn.addEventListener('click', handleSend);
   checkBackendHealth();
+  fetchAndPopulateSuggestions();
 });
 
 // ── Backend Health ───────────────────────────────────────────────
@@ -455,4 +456,69 @@ function renderMarkdown(text) {
     // Line breaks
     .replace(/\n\n/g, '<div class="md-paragraph-break"></div>')
     .replace(/\n/g, '<br>');
+}
+
+// ── Upload & Suggestions ─────────────────────────────────────────
+
+async function handleSidebarUpload(file) {
+  if (!file) return;
+
+  const allowed = ['.xlsx', '.xls', '.csv', '.txt'];
+  const ext = '.' + file.name.split('.').pop().toLowerCase();
+  
+  const label = document.querySelector('label[for="inline-file-input"]');
+  if (label) label.style.color = 'var(--text-muted)';
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const res = await fetch(`${API_BASE}/upload`, { method: 'POST', body: formData });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.errors?.[0]?.message || 'Upload failed');
+    
+    if (label) {
+      label.style.color = 'var(--accent-emerald)';
+      setTimeout(() => label.style.color = '', 3000);
+    }
+    checkBackendHealth();
+    fetchAndPopulateSuggestions();
+  } catch (err) {
+    if (label) {
+      label.style.color = 'var(--accent-pink)';
+      console.error(err);
+      setTimeout(() => label.style.color = '', 3000);
+    }
+  }
+}
+
+async function fetchAndPopulateSuggestions() {
+  try {
+    const res = await fetch(`${API_BASE}/health`);
+    const json = await res.json();
+    const suggestions = json.data?.rag_engine?.suggestions;
+    
+    if (suggestions && suggestions.length > 0) {
+      // Create HTML strings for chips
+      const quickPromptsHTML = suggestions.slice(0, 4).map(s => {
+        const textOnly = s.substring(2).replace(/'/g, "\\'").trim();
+        return `<button class="quick-prompt-chip" onclick="sendQuickPrompt('${textOnly}')">${escapeHtml(s)}</button>`;
+      }).join('');
+      
+      const welcomeChipsHTML = suggestions.slice(0, 6).map(s => {
+        const textOnly = s.substring(2).replace(/'/g, "\\'").trim();
+        return `<button class="welcome-chip" onclick="sendQuickPrompt('${textOnly}')">${escapeHtml(s)}</button>`;
+      }).join('');
+
+      // Populate sidebar (first 4)
+      const sidebarContainer = document.querySelector('.quick-prompts');
+      if (sidebarContainer) sidebarContainer.innerHTML = quickPromptsHTML;
+      
+      // Populate main welcome area (all 6)
+      const welcomeChips = document.querySelector('.welcome-chips');
+      if (welcomeChips) welcomeChips.innerHTML = welcomeChipsHTML;
+    }
+  } catch (e) {
+    console.error('Failed to load suggestions', e);
+  }
 }

@@ -60,7 +60,8 @@ async function loadHistory() {
       return;
     }
 
-    history.forEach((item, idx) => {
+    const reversed = [...history].reverse();
+    reversed.forEach((item, idx) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td class="query-cell">${escapeHtml(item.query)}</td>

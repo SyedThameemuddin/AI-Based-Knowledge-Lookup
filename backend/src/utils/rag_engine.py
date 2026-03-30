@@ -33,6 +33,7 @@ class RAGEngine:
         self.index = None
         self.texts: List[str] = []
         self.document_ids: List[str] = []
+        self.suggestions: List[str] = ["🔍 What data is available?", "📦 Show all items", "✅ Successful operations", "💰 Total values", "🚚 View categories", "🏆 Top records"]
         self.embed_model = None
         self.groq_client = None
         self._loaded = False
@@ -78,11 +79,11 @@ class RAGEngine:
                     metadata = pickle.load(f)
 
                 self.texts = metadata.get("texts", [])
-                # Support both old key (shipment_ids) and new key (document_ids)
                 self.document_ids = metadata.get(
                     "document_ids",
                     metadata.get("shipment_ids", [f"doc_{i}" for i in range(len(self.texts))])
                 )
+                self.suggestions = metadata.get("suggestions", self.suggestions)
                 self._loaded = True
                 print(f"  ✓ FAISS index loaded — {len(self.texts)} documents")
             except Exception as e:
@@ -184,7 +185,8 @@ Instructions:
             "index_loaded": self._loaded,
             "document_count": len(self.texts),
             "embedding_model": config.EMBED_MODEL,
-            "llm_model": config.MODEL_NAME
+            "llm_model": config.MODEL_NAME,
+            "suggestions": self.suggestions[:6]
         }
 
 

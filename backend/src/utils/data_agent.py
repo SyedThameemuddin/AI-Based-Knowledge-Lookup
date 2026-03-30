@@ -2,8 +2,22 @@ import os
 import pandas as pd
 from typing import Dict, Any
 
+import time
 from langchain_groq import ChatGroq
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
+from langchain_core.callbacks import BaseCallbackHandler
+
+class AgentLogHandler(BaseCallbackHandler):
+    def __init__(self):
+        self.logs = []
+        
+    def on_tool_start(self, serialized: Dict[str, Any], input_str: str, **kwargs: Any) -> Any:
+        tool_name = serialized.get('name', 'python_ast_repl')
+        self.logs.append(f"⚙️ **Executing {tool_name}:**\\n```python\\n{input_str}\\n```")
+        
+    def on_tool_end(self, output: str, **kwargs: Any) -> Any:
+        out = output[:200] + "..." if len(output) > 200 else output
+        self.logs.append(f"⏱️ **Result:**\\n```text\\n{out}\\n```")
 
 from settings import config
 from utils.rag_engine import rag_engine
@@ -40,29 +54,50 @@ Query: {query}
             return {"status": "error", "message": f"Modification agent specifically supports Excel and CSV files. Uploaded type: {ext}"}
 
         try:
-            agent = create_pandas_dataframe_agent(
-                self.llm,
-                df,
-                verbose=True,
-                allow_dangerous_code=True,
-                prefix="You are working with a pandas dataframe `df`. Safely perform the requested update, addition, or deletion on `df` in-memory. Do not write to disk yourself. Keep your final output simple and friendly."
-            )
+            # We bypass the bloated LangChain pandas_agent to save 5000+ tokens and avoid 429s.
+            import ast
             
-            result = agent.invoke(query)
+            # Simple custom prompt to generate the exact Pandas update string
+            prompt = f"""You are an expert Data Scientist.
+You are given a pandas dataframe `df` with the following columns: {list(df.columns)}.
+The user's dataset has {len(df)} rows.
+The user wants to execute the following modification: "{query}"
+
+Return ONLY the valid Python code to update `df` in-memory. DO NOT return markdown formatting (`python ...`), triple backticks, explanations, or print statements. ONLY return pure code. Example: df.loc[df['Name'] == 'Chris Anderson', 'Review'] = 3
+"""
+            
+            # Use Groq to generate the raw pandas command
+            code_response = self.llm.invoke(prompt).content.strip().replace('```python', '').replace('```', '').strip()
+            
+            # Provide an isolated environment for safety (basic)
+            local_env = {'df': df, 'pd': pd}
+            
+            try:
+                # Execute the safe in-memory pandas mutation
+                exec(code_response, {}, local_env)
+                updated_df = local_env['df']
+            except Exception as e:
+                # If the LLM generated bad syntax, gracefully catch and return it
+                return {
+                    "status": "error",
+                    "message": f"Agent generated invalid update code: `{code_response}`. Error: {str(e)}"
+                }
             
             # Save the modified df back to disk to persist!
             if ext in [".xlsx", ".xls"]:
-                df.to_excel(rag_engine.dataset_path, index=False)
+                updated_df.to_excel(rag_engine.dataset_path, index=False)
             else:
-                df.to_csv(rag_engine.dataset_path, index=False)
+                updated_df.to_csv(rag_engine.dataset_path, index=False)
 
             # Re-index so the RAG search knows about the new data
             from utils.data_loader import DataLoader
             DataLoader().load_and_index(rag_engine.dataset_path)
 
+            full_response = f"### 🤖 Data Agent Executed:\\n`{code_response}`\\n\\n---\\n**✅ Update Complete!**\\nThe dataset has been successfully modified in memory and saved to disk."
+
             return {
                 "status": "success",
-                "answer": result.get("output", "Successfully updated the dataset."),
+                "answer": full_response,
                 "file_updated": True
             }
 

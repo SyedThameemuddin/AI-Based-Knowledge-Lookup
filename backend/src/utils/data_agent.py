@@ -93,16 +93,40 @@ Return ONLY the valid Python code to update `df` in-memory. DO NOT return markdo
             from utils.data_loader import DataLoader
             DataLoader().load_and_index(rag_engine.dataset_path)
 
+            # State-of-the-art dynamic UI card injected directly into the response stream
             full_response = (
-                f"### ✨ Data Modification Successful!\n\n"
-                f"I have executed your request immediately. Behind the scenes, I authored and ran the following secure data manipulation command:\n\n"
-                f"```python\n"
-                f"{code_response}\n"
-                f"```\n\n"
-                f"---\n"
-                f"**✅ Memory Synced:** Your in-memory vectors are fully updated.\n"
-                f"**✅ File Saved:** The physical dataset has been safely overwritten.\n\n"
-                f"*You can click the **Download Data** button below to manually review your updated spreadsheet right now!*"
+                f'<div style="background: linear-gradient(145deg, rgba(16,185,129,0.1), rgba(16,185,129,0.02)); '
+                f'border: 1px solid rgba(16,185,129,0.2); border-left: 4px solid var(--accent-emerald); '
+                f'border-radius: 12px; padding: 20px; margin: 16px 0; font-family: var(--font-sans); '
+                f'box-shadow: 0 8px 32px rgba(0,0,0,0.15); animation: fadeUp 0.6s ease-out forwards;">\n'
+                f'  <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">\n'
+                f'    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(16,185,129,0.15); '
+                f'display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">✨</div>\n'
+                f'    <div>\n'
+                f'      <h3 style="margin: 0; color: var(--accent-emerald); font-size: 1.15rem; '
+                f'font-family: var(--font-display); letter-spacing: -0.01em;">Dataset Seamlessly Updated</h3>\n'
+                f'      <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-muted); '
+                f'text-transform: uppercase; letter-spacing: 0.05em;">Real-time memory mutation completed</p>\n'
+                f'    </div>\n'
+                f'  </div>\n'
+                f'  <p style="font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 18px; line-height: 1.6;">'
+                f'I successfully executed your request. For maximum system transparency, here is the exact Python logic I authored and deployed to manipulate your underlying vector data:'
+                f'  </p>\n'
+                f'  <div style="background: rgba(0,0,0,0.4); border-radius: 8px; padding: 14px; font-family: '
+                f'ui-monospace, Consolas, monospace; font-size: 0.85rem; color: #a1a1aa; margin-bottom: 18px; '
+                f'border: 1px solid rgba(255,255,255,0.05); overflow-x: auto;">\n'
+                f'    <span style="color: #cba6f7;">{code_response}</span>\n'
+                f'  </div>\n'
+                f'  <div style="display: flex; gap: 16px; align-items: center; padding-top: 16px; '
+                f'border-top: 1px solid rgba(255,255,255,0.08);">\n'
+                f'    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-muted);">\n'
+                f'      <span style="color:var(--accent-emerald); font-size: 0.9rem;">✔</span> <span>Index Synchronized</span>\n'
+                f'    </div>\n'
+                f'    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-muted);">\n'
+                f'      <span style="color:var(--accent-emerald); font-size: 0.9rem;">✔</span> <span>Database Persisted</span>\n'
+                f'    </div>\n'
+                f'  </div>\n'
+                f'</div>'
             )
 
             return {

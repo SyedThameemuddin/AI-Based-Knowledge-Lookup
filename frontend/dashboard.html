@@ -515,11 +515,13 @@
         document.body.appendChild(a);
         a.click();
         
-        // Cleanup explicitly
+        // Cleanup explicitly after sufficient delay
         setTimeout(() => {
           window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-        }, 100);
+          if (a.parentNode) {
+            document.body.removeChild(a);
+          }
+        }, 1000);
         
         btn.innerHTML = '✅ Success';
         setTimeout(() => btn.innerHTML = ogHtml, 3000);

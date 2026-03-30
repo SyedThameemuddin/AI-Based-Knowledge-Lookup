@@ -39,8 +39,14 @@ async function triggerFileDownload(btn) {
     a.download = filename;
     document.body.appendChild(a);
     a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    
+    // Crucial delay to avoid Chrome race condition masking filename
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+      if (a.parentNode) {
+        document.body.removeChild(a);
+      }
+    }, 1000);
     
     btn.innerHTML = '<span>✅ Success</span>';
     setTimeout(() => btn.innerHTML = ogHtml, 3000);

@@ -93,7 +93,17 @@ Return ONLY the valid Python code to update `df` in-memory. DO NOT return markdo
             from utils.data_loader import DataLoader
             DataLoader().load_and_index(rag_engine.dataset_path)
 
-            full_response = f"### 🤖 Data Agent Executed:\n`{code_response}`\n\n---\n**✅ Update Complete!**\nThe dataset has been successfully modified in memory and saved to disk."
+            full_response = (
+                f"### ✨ Data Modification Successful!\n\n"
+                f"I have executed your request immediately. Behind the scenes, I authored and ran the following secure data manipulation command:\n\n"
+                f"```python\n"
+                f"{code_response}\n"
+                f"```\n\n"
+                f"---\n"
+                f"**✅ Memory Synced:** Your in-memory vectors are fully updated.\n"
+                f"**✅ File Saved:** The physical dataset has been safely overwritten.\n\n"
+                f"*You can click the **Download Data** button below to manually review your updated spreadsheet right now!*"
+            )
 
             return {
                 "status": "success",

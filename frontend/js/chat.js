@@ -491,22 +491,26 @@ function renderMarkdown(text) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+    // Horizontal Rule
+    .replace(/^---$/gm, '<hr class="md-hr" />')
     // Headers
     .replace(/^### (.+)$/gm, '<h4 class="md-h4">$1</h4>')
     .replace(/^## (.+)$/gm, '<h3 class="md-h3">$1</h3>')
     // Bold
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     // Italic
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Block Code (```...```)
+    .replace(/```([\s\S]*?)```/g, '<pre class="md-pre"><code class="md-code-block">$1</code></pre>')
     // Inline code
-    .replace(/`(.+?)`/g, '<code class="md-code">$1</code>')
+    .replace(/`([^`]+)`/g, '<code class="md-code">$1</code>')
     // Numbered list items
     .replace(/^\d+\.\s+(.+)$/gm, '<div class="md-list-item"><span class="md-list-num"></span>$1</div>')
     // Bullet list items
     .replace(/^[-•]\s+(.+)$/gm, '<div class="md-list-item"><span class="md-list-bullet">•</span>$1</div>')
     // Line breaks
-    .replace(/\n\n/g, '<div class="md-paragraph-break"></div>')
-    .replace(/\n/g, '<br>');
+    .replace(/\n{2,}/g, '<div class="md-paragraph-break"></div>')
+    .replace(/\n/g, '<br/>');
 }
 
 // ── Upload & Suggestions ─────────────────────────────────────────

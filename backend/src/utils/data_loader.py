@@ -121,25 +121,34 @@ class DataLoader:
         try:
             from groq import Groq
             from settings import config
-            # Grab a sample of up to 3 texts to give the LLM context
-            sample_texts = "\\n".join(texts[:3])
-            prompt = f"Based on the following sample rows from a dataset, suggest exactly 6 diverse and helpful natural language questions a user might ask about this data. Make them short. Output strictly 6 questions separated by newlines, starting each with a relevant single emoji. For example: '📊 What is the total count?'. Do not output anything else.\\n\\nDataset Sample:\\n{sample_texts}"
+            sample_texts = "\n".join(texts[:3])
+            prompt = f"Based on the following sample rows from a dataset, suggest exactly 4 diverse and helpful natural language questions a user might ask about this data. Make them short. Output strictly 4 questions separated by newlines, starting each with a relevant single emoji. For example: '📊 What is the total count?'. Do not output anything else.\n\nDataset Sample:\n{sample_texts}"
             
             client = Groq(api_key=config.GROQ_API_KEY)
             resp = client.chat.completions.create(
                 model=config.MODEL_NAME,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.7,
-                max_tokens=200
+                max_tokens=150
             )
             suggestions_text = resp.choices[0].message.content.strip()
-            suggestions = [s.strip() for s in suggestions_text.split('\\n') if s.strip()]
-            # Ensure we have at least 6, fallback if LLM messes up
-            if len(suggestions) < 6:
-                suggestions.extend(["🔍 What data is available?", "📊 Show a summary", "💡 What are the key insights?", "📋 List the top entries", "❓ What are the anomalies?", "📈 Show the distribution"][:6-len(suggestions)])
+            # Split by actual newline, and remove any numbering (e.g., "1. ")
+            suggestions = []
+            for s in suggestions_text.split('\n'):
+                s = s.strip()
+                if not s: continue
+                # Remove leading numbers/bullets if the LLM adds them despite instructions
+                s = __import__('re').sub(r"^\d+[\.\)]\s*", "", s)
+                s = s.strip('-* \t')
+                if s: suggestions.append(s)
+
+            # Ensure we have at least 4, fallback if LLM messes up
+            if len(suggestions) < 4:
+                suggestions.extend(["🔍 What data is available?", "📊 Show a summary", "💡 What are the key insights?", "📋 List the top entries"][:4-len(suggestions)])
+            suggestions = suggestions[:4]
         except Exception as e:
             print(f"   ⚠ Could not generate suggestions: {e}")
-            suggestions = ["🔍 What data is available?", "📊 Show a summary", "💡 What are the key insights?", "📋 List the top entries", "❓ What are the anomalies?", "📈 Show the distribution"]
+            suggestions = ["🔍 What data is available?", "📊 Show a summary", "💡 What are the key insights?", "📋 List the top entries"]
 
         # Ensure output directory exists
         data_dir = os.path.dirname(config.INDEX_PATH) or "data"

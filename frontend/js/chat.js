@@ -505,7 +505,7 @@ async function fetchAndPopulateSuggestions() {
         return `<button class="quick-prompt-chip" onclick="sendQuickPrompt('${textOnly}')">${escapeHtml(s)}</button>`;
       }).join('');
       
-      const welcomeChipsHTML = suggestions.slice(0, 6).map(s => {
+      const welcomeChipsHTML = suggestions.slice(0, 4).map(s => {
         const textOnly = s.substring(2).replace(/'/g, "\\'").trim();
         return `<button class="welcome-chip" onclick="sendQuickPrompt('${textOnly}')">${escapeHtml(s)}</button>`;
       }).join('');
@@ -514,7 +514,7 @@ async function fetchAndPopulateSuggestions() {
       const sidebarContainer = document.querySelector('.quick-prompts');
       if (sidebarContainer) sidebarContainer.innerHTML = quickPromptsHTML;
       
-      // Populate main welcome area (all 6)
+      // Populate main welcome area (all 4)
       const welcomeChips = document.querySelector('.welcome-chips');
       if (welcomeChips) welcomeChips.innerHTML = welcomeChipsHTML;
     }

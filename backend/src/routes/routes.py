@@ -12,7 +12,7 @@ Endpoints:
 """
 
 from fastapi import APIRouter, Body, UploadFile, File
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 
 from models.dto_model import QueryRequest, APIResponse
 from services.service import KnowledgeService
@@ -39,6 +39,7 @@ class KnowledgeRoutes:
         self.router.add_api_route("/upload",  self.upload_route,  methods=["POST"])
         self.router.add_api_route("/health",  self.health_route,  methods=["GET"])
         self.router.add_api_route("/history", self.history_route, methods=["GET"])
+        self.router.add_api_route("/download", self.download_route, methods=["GET"])
 
     # ── POST /query ──────────────────────────────────────────────
     @logging_decorator
@@ -149,6 +150,30 @@ class KnowledgeRoutes:
             )
             return JSONResponse(content=api_resp.to_dict())
 
+        except Exception as e:
+            return JSONResponse(
+                content={"status": "error", "message": str(e)},
+                status_code=HttpStatusCode.INTERNAL_SERVER_ERROR
+            )
+
+    # ── GET /download ────────────────────────────────────────────
+    def download_route(self):
+        try:
+            from utils.rag_engine import rag_engine
+            import os
+            
+            if not rag_engine.dataset_path or not os.path.exists(rag_engine.dataset_path):
+                return JSONResponse(
+                    content={"status": "error", "message": "No dataset currently loaded to download."},
+                    status_code=404
+                )
+                
+            filename = os.path.basename(rag_engine.dataset_path)
+            return FileResponse(
+                path=rag_engine.dataset_path, 
+                filename=filename, 
+                media_type="application/octet-stream"
+            )
         except Exception as e:
             return JSONResponse(
                 content={"status": "error", "message": str(e)},

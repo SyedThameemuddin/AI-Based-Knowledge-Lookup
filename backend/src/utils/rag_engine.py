@@ -33,6 +33,7 @@ class RAGEngine:
         self.index = None
         self.texts: List[str] = []
         self.document_ids: List[str] = []
+        self.dataset_path: str = None
         self.suggestions: List[str] = ["🔍 What data is available?", "📦 Show all items", "✅ Successful operations", "💰 Total values", "🚚 View categories", "🏆 Top records"]
         self.embed_model = None
         self.groq_client = None
@@ -84,6 +85,7 @@ class RAGEngine:
                     metadata.get("shipment_ids", [f"doc_{i}" for i in range(len(self.texts))])
                 )
                 self.suggestions = metadata.get("suggestions", self.suggestions)
+                self.dataset_path = metadata.get("dataset_path")
                 self._loaded = True
                 print(f"  ✓ FAISS index loaded — {len(self.texts)} documents")
             except Exception as e:

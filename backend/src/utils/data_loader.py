@@ -158,7 +158,7 @@ class DataLoader:
         # Persist to disk
         faiss.write_index(index, config.INDEX_PATH)
         with open(config.METADATA_PATH, "wb") as f:
-            pickle.dump({"texts": texts, "document_ids": doc_ids, "suggestions": suggestions}, f)
+            pickle.dump({"texts": texts, "document_ids": doc_ids, "suggestions": suggestions, "dataset_path": file_path}, f)
 
         print(f"   ✓ Index saved → {config.INDEX_PATH}")
 

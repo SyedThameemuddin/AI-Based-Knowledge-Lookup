@@ -10,3 +10,7 @@ openpyxl
 python-multipart
 pydantic
 aiofiles
+langchain
+langchain-groq
+langchain-experimental
+tabulate

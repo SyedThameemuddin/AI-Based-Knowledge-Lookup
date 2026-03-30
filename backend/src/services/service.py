@@ -13,6 +13,7 @@ import traceback
 
 from utils.rag_engine import rag_engine
 from utils.data_loader import DataLoader
+from utils.data_agent import data_agent
 from utils.exceptions.custom_exception import CustomAppException
 from utils.exceptions.error_codes import ErrorCode, ErrorCodeStatus
 from constants.http_status import HttpStatusCode
@@ -34,9 +35,21 @@ class KnowledgeService:
         try:
             print(f"\n🔍 Query service: '{user_query}' (top_k={top_k})")
 
-            # Let RAGEngine handle whether it has data or not, so conversational greetings still work
-
-            result = rag_engine.query(user_query, top_k)
+            # Intent Classification
+            if data_agent.is_modification_query(user_query):
+                print("🔄 Intent: MODIFY -> Routing to DataAgent")
+                result_agent = data_agent.handle_modification(user_query)
+                result = {
+                    "answer": result_agent.get("answer", result_agent.get("message")),
+                    "sources": [],
+                    "query": user_query,
+                    "document_count": rag_engine.get_stats().get("document_count", 0),
+                    "file_updated": result_agent.get("file_updated", False)
+                }
+            else:
+                print("🔍 Intent: RETRIEVE -> Routing to RAGEngine")
+                result = rag_engine.query(user_query, top_k)
+            
             print("✅ Query completed successfully")
             return result
 
@@ -69,17 +82,17 @@ class KnowledgeService:
         import tempfile
 
         try:
-            print(f"\n📤 Upload service: '{filename}'")
+            print(f"\\n📤 Upload service: '{filename}'")
 
             suffix = os.path.splitext(filename)[1]
-            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-                tmp.write(file_content)
-                tmp_path = tmp.name
+            data_dir = os.path.join(os.getcwd(), "data")
+            os.makedirs(data_dir, exist_ok=True)
+            saved_path = os.path.join(data_dir, f"uploaded_dataset{suffix}")
 
-            try:
-                result = self.data_loader.load_and_index(tmp_path)
-            finally:
-                os.unlink(tmp_path)
+            with open(saved_path, "wb") as f:
+                f.write(file_content)
+
+            result = self.data_loader.load_and_index(saved_path)
 
             print(f"✅ Upload completed — {result['document_count']} documents indexed")
             return result

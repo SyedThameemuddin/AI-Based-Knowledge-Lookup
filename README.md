@@ -11,6 +11,7 @@ FindX is an AI-powered chatbot that lets you upload Excel, CSV, or text files an
 | Feature | Description |
 |---|---|
 | 🧠 **Semantic Search** | Understands meaning, not just keywords |
+| 🤖 **Agentic Data Manipulation** | Chat out loud to automatically rewrite, add, or delete data rows using a LangChain agent! |
 | ⚡ **Instant Answers** | Responses in under 2 seconds via Groq |
 | 📁 **Multi-Format** | Supports `.xlsx`, `.csv`, `.txt` uploads |
 | 🎯 **No Hallucinations** | Answers only from your data, with source citations |

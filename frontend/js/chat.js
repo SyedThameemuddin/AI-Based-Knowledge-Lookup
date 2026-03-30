@@ -32,6 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
   sendBtn.addEventListener('click', handleSend);
   checkBackendHealth();
   fetchAndPopulateSuggestions();
+
+  // Autonomous First-Time Greeting
+  if (!currentSession && chatSessions.length === 0) {
+    setTimeout(triggerWelcomeGreeting, 500);
+  }
 });
 
 // ── Backend Health ───────────────────────────────────────────────
@@ -51,6 +56,31 @@ async function checkBackendHealth() {
     }
   } catch {
     if (statusEl) { statusEl.textContent = 'Offline'; statusEl.style.color = 'hsl(0,80%,70%)'; }
+  }
+}
+
+// ── Autonomous Greeting ──────────────────────────────────────────
+async function triggerWelcomeGreeting() {
+  if (welcomeState) welcomeState.style.display = 'none';
+  startNewSession();
+  
+  showTypingIndicator();
+  await sleep(600);
+  removeTypingIndicator();
+
+  const text = "Hi there! 👋 I am **FindX**, your intelligent data assistant.\n\nUpload an Excel, CSV, or Text file and I'll help you instantly query its contents. I can also perform advanced data modifications—if you ask me to **update, delete, or add** records, I will directly modify the structured dataset for you to download!\n\nHow can I help you today?";
+  
+  await appendAIMessageStreaming(text, [], '0.1', false);
+  
+  // Save greeting silently
+  if (currentSession) {
+    currentSession.title = "Welcome to FindX";
+    currentSession.messages.push({ role: 'ai', content: text, sources: [], fileUpdated: false });
+    const idx = chatSessions.findIndex(s => s.id === currentSession.id);
+    if (idx >= 0) chatSessions[idx] = currentSession;
+    else chatSessions.unshift(currentSession);
+    localStorage.setItem('findx_sessions', JSON.stringify(chatSessions));
+    renderHistoryList();
   }
 }
 
@@ -87,11 +117,11 @@ async function handleSend() {
 
     if (!res.ok || json.errors?.length) {
       const errMsg = json.errors?.[0]?.message || json.message || 'Unknown error.';
-      appendAIMessage(`⚠️ ${errMsg}`, [], elapsed);
+      appendAIMessage(`⚠️ ${errMsg}`, [], elapsed, false);
     } else {
-      const { answer, sources } = json.data;
-      await appendAIMessageStreaming(answer, sources || [], elapsed);
-      saveToSession(query, answer, sources || []);
+      const { answer, sources, file_updated } = json.data;
+      await appendAIMessageStreaming(answer, sources || [], elapsed, file_updated);
+      saveToSession(query, answer, sources || [], file_updated);
     }
   } catch (err) {
     removeTypingIndicator();
@@ -131,10 +161,10 @@ function appendUserMessage(text) {
 }
 
 // Instant append (for loading sessions, errors)
-function appendAIMessage(text, sources, elapsed) {
+function appendAIMessage(text, sources, elapsed, fileUpdated = false) {
   const time = formatTime(new Date());
   const sourcesHtml = sources.length > 0 ? buildSourcesPanel(sources) : '';
-  const metaHtml = buildResponseMeta(sources.length, elapsed);
+  const metaHtml = buildResponseMeta(sources.length, elapsed, fileUpdated);
 
   const el = document.createElement('div');
   el.className = 'message ai animate-fade-up';
@@ -229,7 +259,7 @@ async function typewriterEffect(el, text) {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-function buildResponseMeta(sourceCount, elapsed) {
+function buildResponseMeta(sourceCount, elapsed, fileUpdated = false) {
   return `
     <div class="response-meta">
       <span class="meta-chip">
@@ -248,6 +278,12 @@ function buildResponseMeta(sourceCount, elapsed) {
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         Copy
       </button>
+      ${fileUpdated ? `
+      <button class="meta-chip meta-download" style="border-color: var(--accent-emerald); color: var(--accent-emerald);" onclick="window.location.href='${API_BASE}/download'">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download CSV/Excel
+      </button>
+      ` : ''}
     </div>
   `;
 }
@@ -334,14 +370,14 @@ function startNewSession() {
   });
 }
 
-function saveToSession(query, answer, sources) {
+function saveToSession(query, answer, sources, fileUpdated = false) {
   if (!currentSession) return;
 
   if (currentSession.messages.length === 0) {
     currentSession.title = query.slice(0, 45) + (query.length > 45 ? '…' : '');
   }
   currentSession.messages.push({ role: 'user', content: query });
-  currentSession.messages.push({ role: 'ai', content: answer, sources });
+  currentSession.messages.push({ role: 'ai', content: answer, sources, fileUpdated });
 
   const idx = chatSessions.findIndex(s => s.id === currentSession.id);
   if (idx >= 0) chatSessions[idx] = currentSession;
@@ -379,7 +415,7 @@ function loadSession(session) {
 
   session.messages.forEach(msg => {
     if (msg.role === 'user') appendUserMessage(msg.content);
-    else appendAIMessage(msg.content, msg.sources || [], '—');
+    else appendAIMessage(msg.content, msg.sources || [], '—', msg.fileUpdated);
   });
 
   renderHistoryList();

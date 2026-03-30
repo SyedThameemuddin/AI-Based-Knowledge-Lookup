@@ -31,7 +31,7 @@ pip install -r requirements.txt
 python -m uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Open **http://localhost:8000/app/index.html** → Login → Ask questions!
+Open **http://localhost:8000/app/** → Login → Ask questions!
 
 ---
 

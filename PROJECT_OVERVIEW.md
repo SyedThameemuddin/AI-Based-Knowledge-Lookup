@@ -221,7 +221,7 @@ If your data lives in Excel, CSV, or text files, FindX can make it instantly sea
 
 ## Product Walkthrough
 
-### Page 1: Landing Page (index.html)
+### Page 1: Landing Page (/app/)
 The first page users see when they visit FindX. It features:
 - A **hero section** with the tagline *"Unlock Insights from Any Knowledge Base"*
 - A **login card** with glassmorphism design (email + password)
@@ -229,14 +229,14 @@ The first page users see when they visit FindX. It features:
 - A **"How It Works"** section showing the 4-step pipeline (Upload → Embed → Retrieve → Generate)
 - A demo account button for instant access
 
-### Page 2: Chat Interface (chat.html)
+### Page 2: Chat Interface (/app/chat)
 The core of FindX — a full-screen AI chatbot with:
 - **Left sidebar**: Quick suggestions, file upload button, chat history, session management, configurable sources-per-query
 - **Center area**: Chat messages with user bubbles (purple) and AI bubbles (dark), typing animation, source citations panel
 - **Bottom input bar**: Text area with send button, file attachment, Enter-to-send shortcut
 - **Status indicator**: Shows "Ready" (green) + document count when the engine is loaded
 
-### Page 3: Dashboard (dashboard.html)
+### Page 3: Dashboard (/app/dashboard)
 A management panel with:
 - **Stats cards**: Documents indexed, queries this session, engine status, embedding model
 - **Knowledge Base info**: Index loaded status, document count, embedding model, LLM model, index file path

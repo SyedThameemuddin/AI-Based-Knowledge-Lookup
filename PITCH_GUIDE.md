@@ -126,7 +126,7 @@ Here is the exact flow for a 10-15 minute presentation or pitch:
 
 ### Before the Demo:
 - Make sure the server is running: `python -m uvicorn app:app --port 8000 --reload`
-- Open `http://localhost:8000/app/index.html` in the browser
+- Open `http://localhost:8000/app/` in the browser
 - Have the sample `shipments.xlsx` ready (or use the pre-loaded data)
 
 ### Demo Script (2-3 Minutes):

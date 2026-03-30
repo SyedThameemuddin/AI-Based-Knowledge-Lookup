@@ -57,18 +57,34 @@ app.add_middleware(
 router = KnowledgeRoutes()
 app.include_router(router.router)
 
-# ── Serve Frontend as Static Files ───────────────────────────────
+# ── Serve Frontend ───────────────────────────────────────────────
 # Frontend is at ../../frontend relative to src/
 _frontend_dir = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
 )
-if os.path.isdir(_frontend_dir):
-    app.mount("/app", StaticFiles(directory=_frontend_dir, html=True), name="frontend")
-    print(f"✓ Frontend served at http://localhost:8000/app/index.html")
 
+# Clean URL routes — no .html extension exposed
 @app.get("/")
 async def root_redirect():
     return FileResponse(os.path.join(_frontend_dir, "index.html"))
+
+@app.get("/app")
+@app.get("/app/")
+async def app_home():
+    return FileResponse(os.path.join(_frontend_dir, "index.html"))
+
+@app.get("/app/chat")
+async def app_chat():
+    return FileResponse(os.path.join(_frontend_dir, "chat.html"))
+
+@app.get("/app/dashboard")
+async def app_dashboard():
+    return FileResponse(os.path.join(_frontend_dir, "dashboard.html"))
+
+# Static assets (CSS, JS, images) still served via mount
+if os.path.isdir(_frontend_dir):
+    app.mount("/app", StaticFiles(directory=_frontend_dir, html=False), name="frontend")
+    print(f"✓ Frontend: http://localhost:8000/app/chat | /app/dashboard")
 
 
 # ── Global Exception Handlers ─────────────────────────────────────

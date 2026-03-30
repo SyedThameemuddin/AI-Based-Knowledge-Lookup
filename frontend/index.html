@@ -48,15 +48,15 @@
   <div class="page-wrap">
     <!-- ── Navigation ── -->
     <nav class="nav">
-      <a href="index.html" class="nav-logo">
+      <a href="/app/" class="nav-logo">
         <div class="nav-logo-icon">✦</div>
         <span>Find<span class="gradient-text">X</span></span>
       </a>
       <div class="nav-links">
         <a href="#features" class="nav-link">Features</a>
         <a href="#how-it-works" class="nav-link">How It Works</a>
-        <a href="dashboard.html" class="nav-link">Dashboard</a>
-        <a href="chat.html" class="btn btn-primary btn-sm" id="nav-try-btn">Try Now →</a>
+        <a href="/app/dashboard" class="nav-link">Dashboard</a>
+        <a href="/app/chat" class="btn btn-primary btn-sm" id="nav-try-btn">Try Now →</a>
       </div>
     </nav>
 
@@ -82,10 +82,10 @@
         </p>
 
         <div class="hero-actions animate-fade-up anim-delay-3">
-          <a href="chat.html" class="btn btn-primary btn-lg" id="hero-primary-btn">
+          <a href="/app/chat" class="btn btn-primary btn-lg" id="hero-primary-btn">
             <span>🚀</span> Start Querying
           </a>
-          <a href="dashboard.html" class="btn btn-secondary btn-lg">
+          <a href="/app/dashboard" class="btn btn-secondary btn-lg">
             <span>📂</span> Upload Data
           </a>
         </div>
@@ -265,8 +265,8 @@
       </div>
       <div style="font-size:0.8rem; color:var(--text-muted);">AI Based Knowledge Lookup — College Project &copy; 2026</div>
       <div style="display:flex; gap:16px;">
-        <a href="chat.html" style="font-size:0.85rem; color:var(--text-secondary); text-decoration:none;">Chat</a>
-        <a href="dashboard.html" style="font-size:0.85rem; color:var(--text-secondary); text-decoration:none;">Dashboard</a>
+        <a href="/app/chat" style="font-size:0.85rem; color:var(--text-secondary); text-decoration:none;">Chat</a>
+        <a href="/app/dashboard" style="font-size:0.85rem; color:var(--text-secondary); text-decoration:none;">Dashboard</a>
         <a href="http://localhost:8000/docs" target="_blank" style="font-size:0.85rem; color:var(--text-secondary); text-decoration:none;">API Docs</a>
       </div>
     </footer>
@@ -290,7 +290,7 @@
         if (result.success) {
           btn.textContent = '✓ Redirecting…';
           const base = window.location.pathname.includes('/app/') ? '/app/' : '';
-          window.location.href = base + 'chat.html';
+          window.location.href = '/app/chat';
         } else {
           errEl.textContent  = result.message;
           errEl.style.display = 'block';

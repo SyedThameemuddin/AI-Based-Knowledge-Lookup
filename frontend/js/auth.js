@@ -9,8 +9,7 @@ const FINDX_USER_KEY = 'findx_user';
 function requireAuth() {
   const user = getUser();
   if (!user) {
-    const base = window.location.pathname.includes('/app/') ? '/app/' : '';
-    window.location.href = base + 'index.html';
+    window.location.href = '/app/';
   }
   return user;
 }
@@ -58,8 +57,7 @@ function login(email, password) {
 function logout() {
   localStorage.removeItem(FINDX_USER_KEY);
   // Support both file:// and http:// serving
-  const base = window.location.pathname.includes('/app/') ? '/app/' : '';
-  window.location.href = base + 'index.html';
+  window.location.href = '/app/';
 }
 
 /**

@@ -92,10 +92,10 @@ Once the server starts (you'll see `Application startup complete`):
 
 | Page | URL |
 |---|---|
-| **Landing Page** | http://localhost:8000/app/index.html |
+| **Landing Page** | http://localhost:8000/app/ |
 | **Login** | Use any email + password (e.g., `demo@findx.io` / `demo1234`) |
-| **Chat** | http://localhost:8000/app/chat.html |
-| **Dashboard** | http://localhost:8000/app/dashboard.html |
+| **Chat** | http://localhost:8000/app/chat |
+| **Dashboard** | http://localhost:8000/app/dashboard |
 | **API Docs** | http://localhost:8000/docs |
 
 ---
@@ -214,7 +214,7 @@ INFO:     Started reloader process [14424] using WatchFiles
   ✓ Groq client ready — model: llama-3.1-8b-instant
   ✓ FAISS index loaded — 10 documents
 ✅ RAG Engine initialized
-✓ Frontend served at http://localhost:8000/app/index.html
+✓ Frontend: http://localhost:8000/app/chat | /app/dashboard
 INFO:     Application startup complete.
 ```
 
@@ -245,9 +245,9 @@ Once the server is running, open your browser and go to:
 
 | Page | URL | Description |
 |---|---|---|
-| **Home / Login** | http://localhost:8000/app/index.html | Landing page with login form |
-| **Chat** | http://localhost:8000/app/chat.html | AI chatbot interface |
-| **Dashboard** | http://localhost:8000/app/dashboard.html | Knowledge base management |
+| **Home / Login** | http://localhost:8000/app/ | Landing page with login form |
+| **Chat** | http://localhost:8000/app/chat | AI chatbot interface |
+| **Dashboard** | http://localhost:8000/app/dashboard | Knowledge base management |
 | **API Docs** | http://localhost:8000/docs | Interactive Swagger documentation |
 | **Root Redirect** | http://localhost:8000/ | Redirects to landing page |
 
@@ -347,7 +347,7 @@ print(r.json()["data"]["answer"])
 
 ### Via Dashboard (Recommended)
 
-1. Go to http://localhost:8000/app/dashboard.html
+1. Go to http://localhost:8000/app/dashboard
 2. Scroll to the **"Upload Knowledge Base"** section
 3. **Drag and drop** your file onto the upload zone, or click to browse
 4. Wait for the indexing to complete (~2-30 seconds depending on file size)
@@ -604,7 +604,7 @@ file: <binary file data>
 
 **Symptoms**: `Access-Control-Allow-Origin` errors
 
-**Solution**: Access the frontend via `http://localhost:8000/app/index.html` (not `file://`).
+**Solution**: Access the frontend via `http://localhost:8000/app/` (not `file://`).
 
 ### Problem: Embedding model download is slow
 
@@ -665,7 +665,7 @@ python -m uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 
 ### Step 8: Open the App
 
-Open your browser to: **http://localhost:8000/app/index.html**
+Open your browser to: **http://localhost:8000/app/**
 
 That's it! The system will automatically:
 - Create the `data/` directory
@@ -774,7 +774,7 @@ AI Based Knowlege Look up/
 2. cd backend/src                            (navigate)
 3. pip install -r requirements.txt           (one time)
 4. python -m uvicorn app:app --port 8000 --reload   (start)
-5. Open http://localhost:8000/app/index.html  (browse)
+5. Open http://localhost:8000/app/  (browse)
 6. Login with any email/password             (use)
 7. Ask questions!                            (enjoy)
 ```

@@ -487,7 +487,7 @@ function escapeHtml(str) {
 }
 
 function renderMarkdown(text) {
-  return text
+  let html = text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -511,6 +511,36 @@ function renderMarkdown(text) {
     // Line breaks
     .replace(/\n{2,}/g, '<div class="md-paragraph-break"></div>')
     .replace(/\n/g, '<br/>');
+
+  // Inject High-End UI Component for Agent Responses
+  const successCardRegex = /:::SUCCESS_CARD:::<br\/>([\s\S]*?)<br\/>:::END_CARD:::/g;
+  html = html.replace(successCardRegex, (match, p1) => {
+    return `
+      <div style="background: linear-gradient(145deg, rgba(16,185,129,0.1), rgba(16,185,129,0.02)); border: 1px solid rgba(16,185,129,0.2); border-left: 4px solid var(--accent-emerald); border-radius: 12px; padding: 20px; margin: 16px 0; font-family: var(--font-sans); box-shadow: 0 8px 32px rgba(0,0,0,0.15); animation: fadeUp 0.6s ease-out forwards;">
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(16,185,129,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">✨</div>
+          <div>
+            <h3 style="margin: 0; color: var(--accent-emerald); font-size: 1.15rem; font-family: var(--font-display); letter-spacing: -0.01em;">Dataset Seamlessly Updated</h3>
+            <p style="margin: 2px 0 0 0; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Real-time memory mutation completed</p>
+          </div>
+        </div>
+        <p style="font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 18px; line-height: 1.6;">I successfully executed your request. For maximum system transparency, here is the exact Python logic I authored and deployed to manipulate your underlying vector data:</p>
+        <div style="background: rgba(0,0,0,0.4); border-radius: 8px; padding: 14px; font-family: ui-monospace, Consolas, monospace; font-size: 0.85rem; color: #a1a1aa; margin-bottom: 18px; border: 1px solid rgba(255,255,255,0.05); overflow-x: auto;">
+          <span style="color: #cba6f7;">${p1}</span>
+        </div>
+        <div style="display: flex; gap: 16px; align-items: center; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08);">
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-muted);">
+            <span style="color:var(--accent-emerald); font-size: 0.9rem;">✔</span> <span>Index Synchronized</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-muted);">
+            <span style="color:var(--accent-emerald); font-size: 0.9rem;">✔</span> <span>Database Persisted</span>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  return html;
 }
 
 // ── Upload & Suggestions ─────────────────────────────────────────

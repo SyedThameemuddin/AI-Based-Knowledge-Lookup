@@ -513,8 +513,11 @@ function renderMarkdown(text) {
     .replace(/\n/g, '<br/>');
 
   // Inject High-End UI Component for Agent Responses
-  const successCardRegex = /:::SUCCESS_CARD:::<br\/>([\s\S]*?)<br\/>:::END_CARD:::/g;
+  const successCardRegex = /:::SUCCESS_CARD:::([\s\S]*?):::END_CARD:::/g;
   html = html.replace(successCardRegex, (match, p1) => {
+    // Clean up any stray leading/trailing BR tags or paragraph breaks from regex match
+    let codeStr = p1.replace(/^(<br\/>|<div class="md-paragraph-break"><\/div>|\s)+/, '')
+                    .replace(/(<br\/>|<div class="md-paragraph-break"><\/div>|\s)+$/, '');
     return `
       <div style="background: linear-gradient(145deg, rgba(16,185,129,0.1), rgba(16,185,129,0.02)); border: 1px solid rgba(16,185,129,0.2); border-left: 4px solid var(--accent-emerald); border-radius: 12px; padding: 20px; margin: 16px 0; font-family: var(--font-sans); box-shadow: 0 8px 32px rgba(0,0,0,0.15); animation: fadeUp 0.6s ease-out forwards;">
         <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">
@@ -526,7 +529,7 @@ function renderMarkdown(text) {
         </div>
         <p style="font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 18px; line-height: 1.6;">I successfully executed your request. For maximum system transparency, here is the exact Python logic I authored and deployed to manipulate your underlying vector data:</p>
         <div style="background: rgba(0,0,0,0.4); border-radius: 8px; padding: 14px; font-family: ui-monospace, Consolas, monospace; font-size: 0.85rem; color: #a1a1aa; margin-bottom: 18px; border: 1px solid rgba(255,255,255,0.05); overflow-x: auto;">
-          <span style="color: #cba6f7;">${p1}</span>
+          <span style="color: #cba6f7;">${codeStr}</span>
         </div>
         <div style="display: flex; gap: 16px; align-items: center; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08);">
           <div style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-muted);">
